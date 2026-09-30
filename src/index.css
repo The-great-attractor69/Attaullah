@@ -53,13 +53,16 @@
 @media (max-width: 1023px) {
   .monolith-target-container {
     position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
     width: 100% !important;
-    max-width: 280px !important;
-    height: 230px !important;
+    max-width: 320px !important;
+    height: auto !important;
     margin-left: auto !important;
     margin-right: auto !important;
     margin-top: 0.5rem !important;
-    margin-bottom: 0.75rem !important;
+    margin-bottom: 1.25rem !important;
     z-index: 10 !important;
     pointer-events: auto !important;
   }

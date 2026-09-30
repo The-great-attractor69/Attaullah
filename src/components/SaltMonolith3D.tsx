@@ -33,7 +33,6 @@ export const SaltMonolith3D: React.FC<SaltMonolith3DProps> = ({
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rockBoundingSphereRef = useRef<THREE.Sphere | null>(null);
   const monolithRef = useRef<THREE.Group | null>(null);
-  const reflectionMonolithRef = useRef<THREE.Group | null>(null);
   const coreLightRef = useRef<THREE.PointLight | null>(null);
   const innerCoreMeshRef = useRef<THREE.Mesh | null>(null);
   const outerRockMeshRef = useRef<THREE.Mesh | null>(null);
@@ -68,9 +67,6 @@ export const SaltMonolith3D: React.FC<SaltMonolith3DProps> = ({
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    // Soft distance fog matching atmospheric dusky backdrop
-    scene.fog = new THREE.FogExp2(0x0b0908, 0.04);
-
     const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
     cameraRef.current = camera;
 
@@ -80,6 +76,7 @@ export const SaltMonolith3D: React.FC<SaltMonolith3DProps> = ({
       alpha: true,
       powerPreference: 'high-performance',
     });
+    renderer.setClearColor(0x000000, 0);
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -218,39 +215,7 @@ export const SaltMonolith3D: React.FC<SaltMonolith3DProps> = ({
     const ambientLight = new THREE.AmbientLight(0x201610, 1.1);
     scene.add(ambientLight);
 
-    // 8. Glossy Dark Liquid Mirror Floor & Reflection
-    const floorGeo = new THREE.PlaneGeometry(24, 24);
-    const floorMat = new THREE.MeshStandardMaterial({
-      color: 0x050403,
-      roughness: 0.16,
-      metalness: 0.88,
-    });
-    const floorMesh = new THREE.Mesh(floorGeo, floorMat);
-    floorMesh.rotation.x = -Math.PI / 2;
-    floorMesh.position.y = -2.25;
-    floorMesh.receiveShadow = true;
-    scene.add(floorMesh);
-
-    // Reflection clone beneath the floor for true realistic liquid reflection
-    const reflectionGroup = new THREE.Group();
-    const reflectionRockMat = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(theme.crystalColor),
-      emissive: new THREE.Color(theme.innerGlowColor),
-      emissiveIntensity: 0.45,
-      roughness: 0.4,
-      metalness: 0.1,
-      transparent: true,
-      opacity: 0.38,
-      flatShading: true,
-    });
-    const reflectionRockMesh = new THREE.Mesh(baseGeo.clone(), reflectionRockMat);
-    reflectionRockMesh.scale.set(1, -1, 1);
-    reflectionGroup.position.set(0, -4.5, 0);
-    reflectionGroup.add(reflectionRockMesh);
-    scene.add(reflectionGroup);
-    reflectionMonolithRef.current = reflectionGroup;
-
-    // 9. Ambient Golden Dust Motes / Particles
+    // 8. Ambient Golden Dust Motes / Particles
     const isMobile = window.innerWidth < 768;
     const particleCount = isMobile ? 40 : 90;
     const particleGeo = new THREE.BufferGeometry();
@@ -303,14 +268,6 @@ export const SaltMonolith3D: React.FC<SaltMonolith3DProps> = ({
         masterGroup.rotation.y = autoRotY + targetRotation.current.y + mouse.current.x * 0.22;
         masterGroup.rotation.x = targetRotation.current.x - mouse.current.y * 0.18;
         masterGroup.rotation.z = Math.sin(elapsedTime * 0.5) * 0.02 + mouse.current.x * 0.04;
-
-        // Sync reflection monolith
-        if (reflectionMonolithRef.current) {
-          reflectionMonolithRef.current.position.y = -4.5 - floatY;
-          reflectionMonolithRef.current.rotation.y = masterGroup.rotation.y;
-          reflectionMonolithRef.current.rotation.x = -masterGroup.rotation.x;
-          reflectionMonolithRef.current.rotation.z = -masterGroup.rotation.z;
-        }
 
         // Inner glowing core breathing pulse
         if (innerCoreMeshRef.current) {
@@ -386,8 +343,6 @@ export const SaltMonolith3D: React.FC<SaltMonolith3DProps> = ({
       rockMaterial.dispose();
       coreGeo.dispose();
       coreMat.dispose();
-      floorGeo.dispose();
-      floorMat.dispose();
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
@@ -444,14 +399,14 @@ export const SaltMonolith3D: React.FC<SaltMonolith3DProps> = ({
 
   return (
     <div
-      className={`relative w-full h-full select-none ${className}`}
+      className={`relative w-full h-full flex flex-col items-center lg:block select-none ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* 3D WebGL Canvas Container */}
       <div
         ref={containerRef}
-        className={`w-full h-full cursor-grab ${isDragging ? 'cursor-grabbing' : ''}`}
+        className={`w-full h-[210px] sm:h-[230px] lg:h-full cursor-grab ${isDragging ? 'cursor-grabbing' : ''}`}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -470,10 +425,10 @@ export const SaltMonolith3D: React.FC<SaltMonolith3DProps> = ({
         </div>
       )}
 
-      {/* Subtle interaction tip overlay */}
+      {/* Subtle interaction tip overlay / badge */}
       <div
-        className={`absolute bottom-6 right-6 text-[11px] text-stone-400 tracking-wider transition-opacity duration-300 pointer-events-none ${
-          isHovered ? 'opacity-80' : 'opacity-40'
+        className={`relative mt-2.5 px-3.5 py-1.5 rounded-full bg-stone-900/70 border border-stone-800/80 text-[11px] text-stone-400 tracking-wider transition-opacity duration-300 pointer-events-none flex items-center justify-center text-center lg:absolute lg:bottom-6 lg:right-6 lg:mt-0 lg:p-0 lg:rounded-none lg:bg-transparent lg:border-transparent ${
+          isHovered ? 'opacity-90 lg:opacity-80' : 'opacity-70 lg:opacity-40'
         }`}
       >
         <span className="inline-block mr-1 text-[#d97736]">✦</span> Drag to inspect 3D crystal · {theme.name}
