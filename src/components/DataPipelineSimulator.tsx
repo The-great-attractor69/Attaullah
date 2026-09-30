@@ -387,21 +387,21 @@ export const DataPipelineSimulator: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
-              <div className="p-2.5 rounded-lg bg-stone-900/50 border border-stone-800">
-                <span className="text-lg font-bold text-red-400 font-mono">0</span>
-                <span className="block text-[11px] text-stone-400">Major NCs Open</span>
+              <div className="p-2.5 rounded-lg bg-stone-900/60 border border-stone-800/80 hover:border-blue-500/40 transition-colors">
+                <span className="text-lg font-bold text-blue-400 font-mono tabular-nums">17</span>
+                <span className="block text-[11px] text-stone-400 mt-0.5">Dept Audited</span>
               </div>
-              <div className="p-2.5 rounded-lg bg-stone-900/50 border border-stone-800">
-                <span className="text-lg font-bold text-amber-400 font-mono">100%</span>
-                <span className="block text-[11px] text-stone-400">CAPA Plan Issued</span>
+              <div className="p-2.5 rounded-lg bg-stone-900/60 border border-stone-800/80 hover:border-red-500/40 transition-colors">
+                <span className="text-lg font-bold text-red-400 font-mono tabular-nums">90</span>
+                <span className="block text-[11px] text-stone-400 mt-0.5">Major NCs</span>
               </div>
-              <div className="p-2.5 rounded-lg bg-stone-900/50 border border-stone-800">
-                <span className="text-lg font-bold text-blue-400 font-mono">17</span>
-                <span className="block text-[11px] text-stone-400">Dept Audited</span>
+              <div className="p-2.5 rounded-lg bg-stone-900/60 border border-stone-800/80 hover:border-amber-500/40 transition-colors">
+                <span className="text-lg font-bold text-amber-400 font-mono tabular-nums">103</span>
+                <span className="block text-[11px] text-stone-400 mt-0.5">Minor NCs</span>
               </div>
-              <div className="p-2.5 rounded-lg bg-stone-900/50 border border-stone-800">
-                <span className="text-lg font-bold text-emerald-400 font-mono">8</span>
-                <span className="block text-[11px] text-stone-400">Rounds Done</span>
+              <div className="p-2.5 rounded-lg bg-stone-900/60 border border-stone-800/80 hover:border-emerald-500/40 transition-colors">
+                <span className="text-lg font-bold text-emerald-400 font-mono tabular-nums">35</span>
+                <span className="block text-[11px] text-stone-400 mt-0.5">Gaps</span>
               </div>
             </div>
 

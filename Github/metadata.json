@@ -1,6 +1,0 @@
-{
-  "name": "Guillaume Colombel Portfolio Replica & Builder",
-  "description": "Interactive WebGL 3D portfolio replicating Guillaume Colombel's Awwwards-winning site with glowing translucent crystal monolith, editorial typography, and GitHub deployment guide.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

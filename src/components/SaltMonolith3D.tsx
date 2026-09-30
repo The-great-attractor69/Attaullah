@@ -30,6 +30,8 @@ export const SaltMonolith3D: React.FC<SaltMonolith3DProps> = ({
   // Three.js object references
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const rockBoundingSphereRef = useRef<THREE.Sphere | null>(null);
   const monolithRef = useRef<THREE.Group | null>(null);
   const reflectionMonolithRef = useRef<THREE.Group | null>(null);
   const coreLightRef = useRef<THREE.PointLight | null>(null);
@@ -70,7 +72,7 @@ export const SaltMonolith3D: React.FC<SaltMonolith3DProps> = ({
     scene.fog = new THREE.FogExp2(0x0b0908, 0.04);
 
     const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
-    camera.position.set(0, 0.25, 5.6);
+    cameraRef.current = camera;
 
     // 2. Renderer setup
     const renderer = new THREE.WebGLRenderer({
@@ -125,6 +127,37 @@ export const SaltMonolith3D: React.FC<SaltMonolith3DProps> = ({
     }
 
     baseGeo.computeVertexNormals();
+    baseGeo.computeBoundingBox();
+    baseGeo.computeBoundingSphere();
+    const rockSphere = baseGeo.boundingSphere!.clone();
+    rockBoundingSphereRef.current = rockSphere;
+
+    // Fit camera to rock's bounding sphere with ~3% margin and no cropping
+    const fitCameraToBoundingSphere = (w: number, h: number) => {
+      if (!cameraRef.current || !rockBoundingSphereRef.current) return;
+      const cam = cameraRef.current;
+      const sphere = rockBoundingSphereRef.current;
+      const aspect = w / h;
+      cam.aspect = aspect;
+
+      // 3% margin inside the box on both edges: rock occupies ~94% of the limiting viewport dimension
+      const margin = 0.03;
+      const marginFactor = 1 / (1 - 2 * margin); // ≈ 1.064
+      const floatOffset = 0.06; // Sinusoidal levitation amplitude
+      const targetRadius = (sphere.radius + floatOffset) * marginFactor;
+
+      const vFovRad = (cam.fov * Math.PI) / 180;
+      const distV = targetRadius / Math.tan(vFovRad / 2);
+      const distH = distV / aspect;
+      const fitDistance = Math.max(distV, distH);
+
+      cam.position.set(sphere.center.x, sphere.center.y, sphere.center.z + fitDistance);
+      cam.lookAt(sphere.center);
+      cam.updateProjectionMatrix();
+    };
+
+    // Initial camera fit
+    fitCameraToBoundingSphere(width, height);
 
     // 5. Materials
     // Outer translucent crystal rock material with flatShading: true
@@ -313,18 +346,31 @@ export const SaltMonolith3D: React.FC<SaltMonolith3DProps> = ({
       if (!container) return;
       const newWidth = container.clientWidth;
       const newHeight = container.clientHeight;
-      camera.aspect = newWidth / newHeight;
-      camera.updateProjectionMatrix();
+      if (newWidth === 0 || newHeight === 0) return;
       renderer.setSize(newWidth, newHeight);
+      fitCameraToBoundingSphere(newWidth, newHeight);
     };
 
     const handleMouseMove = (e: MouseEvent) => {
       const rect = container.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-      mouse.current.targetX = x;
-      mouse.current.targetY = y;
+      const rawX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const rawY = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+      // Smoothly clamp parallax influence so it never causes off-screen drifting
+      mouse.current.targetX = Math.max(-1.5, Math.min(1.5, rawX));
+      mouse.current.targetY = Math.max(-1.5, Math.min(1.5, rawY));
     };
+
+    // ResizeObserver ensures smooth camera re-fitting on any container size change
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width: w, height: h } = entry.contentRect;
+        if (w > 0 && h > 0) {
+          renderer.setSize(w, h);
+          fitCameraToBoundingSphere(w, h);
+        }
+      }
+    });
+    resizeObserver.observe(container);
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('mousemove', handleMouseMove);
@@ -332,6 +378,7 @@ export const SaltMonolith3D: React.FC<SaltMonolith3DProps> = ({
     // Cleanup
     return () => {
       cancelAnimationFrame(animationFrameId);
+      resizeObserver.disconnect();
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
       renderer.dispose();

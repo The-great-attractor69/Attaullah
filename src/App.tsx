@@ -161,6 +161,14 @@ export default function App() {
 
       {/* Main Split Layout: Left Column carries all text, Right Side stays clear for 3D Monolith */}
       <main className="relative z-10 min-h-screen flex flex-col lg:flex-row items-stretch pt-20 md:pt-24 pb-12 px-6 md:px-12 lg:px-16 max-w-7xl mx-auto">
+        {/* 3D Rock Monolith Container:
+            - Desktop: Fixed at left 52.5%, top 8.7%, width 41.8%, height 87.3% (Center: 73.4%, 52.4%)
+            - Mobile: Scaled down and centered below the header so it never covers text
+        */}
+        <div className="monolith-target-container">
+          <SaltMonolith3D theme={themeConfig} isInteractive={true} />
+        </div>
+
         {/* Left Column: All Text & Interactive Content */}
         <div className="w-full lg:w-1/2 flex flex-col justify-between py-4 lg:py-6 pr-0 lg:pr-10 z-20 space-y-6">
           {/* Section 1: Hero (Name, Headline, Bio) */}
@@ -535,10 +543,8 @@ export default function App() {
           </footer>
         </div>
 
-        {/* Right Column: 3D Faceted Crystal Monolith rendered as the Background */}
-        <div className="w-full lg:w-1/2 h-[500px] sm:h-[580px] lg:h-auto min-h-[460px] relative z-10 flex items-center justify-center">
-          <SaltMonolith3D theme={themeConfig} isInteractive={true} />
-        </div>
+        {/* Right Column Desktop Layout Spacer: Maintains split spacing on desktop */}
+        <div className="hidden lg:block lg:w-1/2 pointer-events-none" />
       </main>
 
       {/* Floating Toast Notification */}
