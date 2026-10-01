@@ -2,13 +2,7 @@
 <xyz>v</xyz>
 </div>
 
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/d8a6592d-9aa3-42e2-bd61-45588fbae63d
-
-## Run Locally
+helo
 
 **Prerequisites:**  Node.js
 
